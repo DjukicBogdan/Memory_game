@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Game</title>
+  </head>
+  <body>
+    <div class="main">
+      <h1>Memory Game</h1>
+      <div class="info" id="info">&nbsp;s</div>
+      <div class="wrapper">
+        <div class="board" id="board"></div>
+      </div>
+      <div class="btnStartWrapper">
+        <button onclick="startGame4()">4 X 4</button>
+        <button onclick="startGame10()">10 X 10</button>
+      </div>
+    </div>
+    <style>
+      body {
+        background-color: black;
+        user-select: none;
+      }
+      .main {
+        display: block;
+      }
+      .main h1 {
+        text-align: center;
+        color: white;
+      }
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        margin: auto;
+      }
+      .board {
+        display: grid;
+        grid-template-columns: 35px 35px 35px 35px 35px 35px 35px 35px 35px 35px;
+        border: 1px solid black;
+      }
+      .field {
+        width: 33px;
+        height: 33px;
+        content: "?";
+        background-color: aquamarine;
+        border: 1px solid black;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        margin: auto;
+        line-height: 2.3rem;
+        font-weight: bold;
+      }
+      .field:hover {
+        background-color: white;
+      }
+      .hitField {
+        z-index: -1;
+        background-color: black;
+        color: white;
+        border: 1px solid white;
+      }
+      .btnStartWrapper {
+        display: flex;
+        justify-content: space-between;
+        margin: auto;
+        width: fit-content;
+        margin-top: 20px;
+      }
+      .btnStartWrapper button {
+        width: fit-content;
+        padding: 10px 20px;
+        margin: 10px;
+      }
+      .info {
+        color: white;
+        text-align: center;
+      }
+      .anim {
+        animation-name: animRotate;
+        animation-duration: 0.6s;
+      }
+      @keyframes animRotate {
+        0% {
+          transform: rotateY(0);
+        }
+        50% {
+          transform: rotateY(90deg);
+        }
+        100% {
+          transform: rotateY(0);
+        }
+      }
+    </style>
+    <script>
+      const board = document.getElementById("board");
+      const info = document.getElementById("info");
+      let fieldList = [];
+      let fieldListRandom = [];
+      let round = 0;
+      let oldField1;
+      let oldField2;
+      let hitList = [];
+      let boardsize = 16;
+      let hit = false;
+      let countTry = 0;
+      board.style.gridTemplateColumns = "auto auto auto auto";
+      function createFields(boardSize) {
+        boardsize = boardSize;
+        if (boardSize === 16) {
+          board.style.gridTemplateColumns = "auto auto auto auto";
+        }
+        if (boardSize === 100) {
+          board.style.gridTemplateColumns = "auto auto auto auto auto auto auto auto auto auto";
+        }
+        boardsize = boardSize;
+        for (let i = 0; i < boardsize; i++) {
+          fieldList.push(i);
+        }
+        for (var i = fieldList.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = fieldList[i];
+          fieldList[i] = fieldList[j];
+          fieldList[j] = temp;
+        }
+        for (let i = 0; i < fieldList.length; i++) {
+          const newDiv = document.createElement("div");
+          newDiv.classList.add("field");
+          newDiv.id = i;
+          newDiv.name = i >= boardsize / 2 ? i - boardsize / 2 : i;
+          newDiv.addEventListener("click", fieldHelndler);
+          fieldListRandom.push(newDiv);
+        }
+        for (let i = 0; i < fieldListRandom.length; i++) {
+          board.appendChild(fieldListRandom[fieldList[i]]);
+          console.log(fieldListRandom[fieldList[i]].name);
+        }
+      }
+
+      function fieldHelndler(event) {
+        round++;
+        if (round > 2) {
+          round = 1;
+          if (!hit) {
+            document.getElementById(oldField1).style.zIndex = 0;
+            document.getElementById(oldField1).innerHTML = "";
+            document.getElementById(oldField2).innerHTML = "";
+          }
+          hit = false;
+          oldField1 = "";
+          oldField2 = "";
+          countTry++;
+          info.innerText = "Round " + countTry;
+        }
+        if (round === 1) {
+          oldField1 = event.target.id;
+          document.getElementById(oldField1).style.zIndex = -1;
+        }
+        if (round === 2) {
+          oldField2 = event.target.id;
+        }
+        if (oldField2 !== "" && document.getElementById(oldField1).name === document.getElementById(oldField2).name) {
+          document.getElementById(oldField1).classList.add("hitField");
+          document.getElementById(oldField2).classList.add("hitField");
+          hitList.push(oldField1);
+          hitList.push(oldField2);
+          hit = true;
+        }
+        if (hitList.length === boardsize) {
+          win();
+        }
+        event.target.classList.add("anim");
+        setTimeout(function () {
+          event.target.innerHTML = event.target.name;
+        }, 500);
+        setTimeout(function () {
+          event.target.classList.remove("anim");
+        }, 1010);
+      }
+      function resetGame() {
+        board.innerHTML = "";
+        fieldList = [];
+        fieldListRandom = [];
+        round = 0;
+        oldField1 = "";
+        oldField2 = "";
+        hitList = [];
+        countTry = 0;
+        info.innerHTML = "&nbsp;";
+      }
+      function win() {
+        info.innerText = "You Win!";
+      }
+      function startGame4() {
+        resetGame();
+        createFields(16);
+      }
+      function startGame10() {
+        resetGame();
+        createFields(100);
+      }
+      startGame4();
+    </script>
+  </body>
+</html>
